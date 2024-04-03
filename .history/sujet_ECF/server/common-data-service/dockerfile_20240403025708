@@ -1,0 +1,25 @@
+FROM maven as builder
+
+
+WORKDIR /app
+
+
+COPY /pom.xml .
+RUN mvn:3.6.0 dependency:go-offline
+
+
+COPY /src ./src
+RUN mvn package -DskipTests
+
+
+FROM openjdk
+
+WORKDIR /app
+
+
+COPY --from=builder app/target/*.jar .
+
+
+EXPOSE 9000
+
+ENTRYPOINT ["java", "-jar", "*.jar"]

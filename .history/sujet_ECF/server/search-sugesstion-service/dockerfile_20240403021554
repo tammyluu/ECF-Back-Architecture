@@ -1,0 +1,23 @@
+FROM maven as builder
+
+WORKDIR /app
+
+
+COPY ./server/payment-service/pom.xml .
+RUN mvn dependency:go-offline
+
+
+COPY /src ./src
+RUN mvn clean package -DskipTests
+
+
+FROM openjdk
+
+WORKDIR /app
+
+
+COPY --from=builder /app/target/*.jar .
+
+
+# Exécution de l'application Spring Boot
+ENTRYPOINT ["java", "-jar", "*.jar"]

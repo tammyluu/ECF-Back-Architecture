@@ -1,0 +1,24 @@
+FROM maven as builder
+
+
+WORKDIR /app
+
+COPY ./server/authentication-service/pom.xml .
+RUN mvn dependency:go-offlinecd
+
+COPY ./server/authentication-service/src ./src
+RUN mvn package -DskipTests
+
+
+FROM openjdk
+
+WORKDIR /app
+
+
+COPY --from=builder app/target/*.jar .
+
+
+EXPOSE 7000
+
+
+ENTRYPOINT ["java", "-jar", "*.jar"]

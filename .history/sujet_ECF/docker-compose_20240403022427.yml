@@ -1,0 +1,78 @@
+version: '3' 
+
+services:
+ 
+  # Database
+  bdd:
+    container_name: bdd
+    image: mysql
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    ports:
+      - "3307:${AUTHENTICATION_SERVICE_PORT}"
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    networks:
+      - ecf
+  #
+  # Authentication service
+  authentication-service:
+    container_name: authen
+    build: 
+      context: ./
+      dockerfile: server/authentication-service/dockerfile
+    ports:
+      - "8081:7000"  
+    depends_on:
+      - bdd
+    networks:
+      - ecf
+
+  # Common data service 
+  common-data-service:
+    build: 
+      context: ./
+      dockerfile: server/common-data-service/dockerfile
+    ports:
+      - "8082:9000"
+    depends_on:
+      - bdd
+    networks:
+      - ecf
+
+  # Payment service 
+  payment-service:
+    build: 
+      context: ./
+      dockerfile: server/payment-service/dockerfile
+    ports:
+      - "8083:9050"
+    depends_on:
+      - bdd
+    networks:
+      - ecf
+
+   # front -end service
+  client:
+    build:
+      #container_name: front
+      context: ./client
+      dockerfile: dockerfile
+    
+    ports:
+      - 80:80
+    depends_on:
+      - authentication-service
+    networks:
+      - ecf
+
+networks:
+  mysqldb:
+    driver: bridge
+
+volumes:
+  db_data:    
+
+ 

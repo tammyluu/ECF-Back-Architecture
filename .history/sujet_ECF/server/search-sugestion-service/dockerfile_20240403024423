@@ -1,0 +1,21 @@
+FROM maven as builder
+
+WORKDIR /app
+
+
+COPY ./server/search-suggestion-service/pom.xml .
+RUN mvn dependency:go-offline
+
+
+COPY ./serversearch-sugestion-service/src ./src
+RUN mvn clean package -DskipTests
+
+
+FROM openjdk
+
+WORKDIR /app
+
+
+COPY --from=builder /app/target/*.jar .
+
+ENTRYPOINT ["java", "-jar", "*.jar"]
