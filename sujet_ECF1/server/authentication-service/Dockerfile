@@ -1,0 +1,23 @@
+
+FROM maven:3-jdk-11 as builder
+
+WORKDIR /app
+
+
+COPY /pom.xml .
+
+COPY /src ./src
+RUN mvn clean package -DskipTests
+
+
+
+FROM openjdk:11
+
+WORKDIR /app
+
+
+COPY --from=builder /app/target/authentication-service.jar .
+
+
+ENTRYPOINT ["java", "-jar", "authentication-service.jar"]
+

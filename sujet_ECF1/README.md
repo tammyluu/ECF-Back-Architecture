@@ -11,7 +11,7 @@ Dans le cadre de cet exercice, vous avez accès au code source de plusieurs micr
 L'application est structurée autour de plusieurs microservices développés avec Spring Boot, complétée par une interface utilisateur développée avec React.
 
 - **Microservice à développer :**
-  - **Service de suggestions de eecherche :** Ce service, que vous devez implémenter, proposera des suggestions de recherche.
+  - **Service de suggestions de recherche :** Ce service, que vous devez implémenter, proposera des suggestions de recherche.
 
 - **Interface utilisateur (UI) React :** Consomme les API fournies par les microservices.
 
@@ -40,3 +40,7 @@ L'application est structurée autour de plusieurs microservices développés ave
 - Dockerfile pour chaque microservice et pour l'interface utilisateur.
 - Fichier Docker Compose pour l'orchestration de l'ensemble de l'application.
 - Documentation sur le processus de déploiement.
+
+https://github.com/JoinGame-A36664/docker-docs/blob/master/scripts/dockerfile.sh
+https://github.com/PhuongNQK?tab=repositories&q=docker&type=&language=&sort=
+https://github.com/mohamedutopios?tab=repositories&q=&type=&language=&sort=

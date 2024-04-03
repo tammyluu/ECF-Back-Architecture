@@ -1,0 +1,134 @@
+version: '3' 
+
+services:
+ 
+  # Database
+  bdd:
+    container_name: bdd
+    image: mysql
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    ports:
+      - 3307:${DB_PORT}
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    networks:
+      - ecf
+
+  redis:
+     image: redis:latest
+     ports:
+       - "${REDIS_PORT}:${REDIS_PORT}"
+     command: redis-server --requirepass ${REDIS_PASSWORD}
+     networks:
+      - ecf  
+  #Server
+  # Authentication service
+  authentication-service:
+    container_name: authen
+    build: 
+      context: ./server/authentication-service
+      dockerfile: Dockerfile
+    ports:
+      - ${AUTHENTICATION_SERVICE_PORT}:${AUTHENTICATION_SERVICE_PORT}
+    environment:
+      PORT: ${AUTHENTICATION_SERVICE_PORT}
+      ACTIVE_PROFILE: ${ACTIVE_PROFILE}
+      DB_HOST: bdd
+      DB_PORT: ${DB_PORT}
+      DB_SCHEMA: ${DB_SCHEMA}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      AUTHENTICATION_SERVICE_URL: http://localhost:${AUTHENTICATION_SERVICE_PORT}
+    depends_on:
+      - bdd  
+    networks:
+      - ecf
+
+  # Common data service 
+  common-data-service:
+    build: 
+      context: ./server/common-data-service
+      dockerfile: Dockerfile
+    ports:
+      - ${COMMON_DATA_SERVICE_PORT}:${COMMON_DATA_SERVICE_PORT}
+    environment:
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      PORT: ${COMMON_DATA_SERVICE_PORT}
+      ACTIVE_PROFILE: ${ACTIVE_PROFILE}
+      DB_HOST: bdd
+      DB_PORT: ${DB_PORT}
+      DB_SCHEMA: ${DB_SCHEMA}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${MYSQL_ROOT_PASSWORD}
+      COMMON_DATA_SERVICE_URL: http://localhost:${COMMON_DATA_SERVICE_PORT}
+    depends_on:
+      - bdd  
+    networks:
+      - ecf
+
+  # Payment service 
+  payment-service:
+    build: 
+      context: ./server/payment-service
+      dockerfile: Dockerfile
+    ports:
+      - ${PAYMENT_SERVICE_PORT}:${PAYMENT_SERVICE_PORT}
+    environment:
+      PORT: ${PAYMENT_SERVICE_PORT}
+      DB_PORT: ${DB_PORT}
+      DB_SCHEMA: ${DB_SCHEMA}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${MYSQL_ROOT_PASSWORD}
+      PAYMENT_SERVICE_URL: http://localhost:${PAYMENT_SERVICE_PORT}
+    networks:
+      - ecf
+
+  # searche suggestion service
+  search-suggestion-service:
+    build:
+      context: ./server/search-suggestion-service
+      dockerfile: Dockerfile
+    ports:
+      - ${SEARCH_SUGGESTION_SERVICE_PORT}:${SEARCH_SUGGESTION_SERVICE_PORT}
+    environment:
+      PORT: ${SEARCH_SUGGESTION_SERVICE_PORT}
+      ACTIVE_PROFILE: ${ACTIVE_PROFILE}
+      DB_PORT: ${DB_PORT}
+      DB_SCHEMA: ${DB_SCHEMA}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${MYSQL_ROOT_PASSWORD}
+      SEARCH_SUGGESTION_SERVICE_URL: http://localhost:${SEARCH_SUGGESTION_SERVICE_PORT}
+    networks:
+      - ecf
+   # Client
+  front-react:
+    build:
+      #container_name: front
+      context: ./client
+      dockerfile: Dockerfile
+    
+    ports:
+      - ${REACT_APP_PORT}:80
+    environment:
+      REACT_CLIENT_URL: ${REACT_CLIENT_URL}
+      REACT_APP_ENVIRONMENT: ${REACT_APP_ENVIRONMENT}  
+    depends_on:
+      - authentication-service
+      - common-data-service
+      - search-suggestion-service
+    networks:
+      - ecf
+
+networks:
+  ecf:
+    driver: bridge
+
+volumes:
+  db_data:    
+
+ 
